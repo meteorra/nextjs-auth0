@@ -4,7 +4,7 @@ import { withPageAuthRequired, getSession } from '@auth0/nextjs-auth0';
 import Highlight from '../components/Highlight';
 
 export default function SSRPage({ user, obj }) {
-  const { expToken, msg, err } = obj
+  const { expToken, msg } = obj
   return (
     <>
       <div className="mb-5" data-testid="ssr">
@@ -13,7 +13,6 @@ export default function SSRPage({ user, obj }) {
           <p>
             Export M2M token: {expToken}<br />
             Export API response: {msg}<br />
-            Err: {err}<br />
             <br />
             <br />
             You can protect a server-side rendered page by wrapping the <code>getServerSideProps</code> function with{' '}
@@ -56,7 +55,7 @@ export const getServerSideProps = withPageAuthRequired({
       
       const exportTokenJson = await fetch('https://dev-a5ktl21utephrnaj.us.auth0.com/oauth/token', optionsExport)
       expToken = await exportTokenJson.json()
-      
+      console.log('TOKEN', expToken.access_token)
       const exportApiJson = await fetch('http://localhost:3001/api/export', {
         headers: {
           "Authorization": `Bearer ${expToken.access_token}`
@@ -64,12 +63,12 @@ export const getServerSideProps = withPageAuthRequired({
       })
       const exportApi = await exportApiJson.json()
       msg = exportApi.msg
-      console.log(msg)
+      console.log('MSG', msg)
     } catch (e) {
       err = e
     }
     // Pass data to the page via props
-    const obj = { expToken: expToken.access_token, msg, err }
-    return { props: { user, obj } }
+    const obj = { expToken: expToken.access_token, msg }
+    return { props: { obj } }
   }
 });
