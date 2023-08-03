@@ -80,6 +80,8 @@ export default withPageAuthRequired(function SSRPage() {
             Algolia keys token: {algoliaKeysToken}<br />
             Export api response: {exportApi}<br />
             Algolia api response: {algoliaKeysApi}<br />
+            <br />
+            <br />
             You can protect a client-side rendered page by wrapping it with <code>withPageAuthRequired</code>. Only
             logged in users will be able to access it. If the user is logged out, they will be redirected to the login
             page instead.

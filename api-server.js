@@ -33,7 +33,7 @@ const checkJwt1 = jwt({
     jwksRequestsPerMinute: 5,
     jwksUri: `${issuerBaseUrl}/.well-known/jwks.json`
   }),
-  audience: 'http://localhost:3001/api/shows',
+  audience: 'http://localhost:3001/api/algolia-keys',
   issuer: `${issuerBaseUrl}/`,
   algorithms: ['RS256']
 });
@@ -50,17 +50,22 @@ const checkJwt2 = jwt({
   algorithms: ['RS256']
 });
 
-app.get('/api/shows', checkJwt1, (req, res) => {
+app.get('/api/algolia-keys', checkJwt1, (req, res) => {
   res.send({
-    msg: 'Your access token for Shows API was successfully validated!'
+    msg: 'Your access token for Algolia keys API was successfully validated!'
   });
-});
-
-app.get('/api/export', checkJwt2, (req, res) => {
+})
+.get('/api/export', checkJwt2, (req, res) => {
   res.send({
     msg: 'Your access token for Export API was successfully validated!'
   });
 });
+
+// app.get('/api/export', checkJwt2, (req, res) => {
+//   res.send({
+//     msg: 'Your access token for Export API was successfully validated!'
+//   });
+// });
 
 const server = app.listen(port, () => console.log(`API Server listening on port ${port}`));
 process.on('SIGINT', () => server.close());
