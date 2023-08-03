@@ -23,35 +23,39 @@ export default withPageAuthRequired(function SSRPage() {
       });
 
       try {
-        const exportToken = await auth0.getTokenSilently({
-          authorizationParams: {
-            audience: 'http://localhost:3001/api/export',
-            // scope: "read:export",
-          }
-        });
-        setExportToken(exportToken)
-        const exportApiJson = await fetch('http://localhost:3001/api/export', {
-          headers: {
-            "Authorization": `Bearer ${exportToken}`
-          }
-        })
-        const exportApi = await exportApiJson.json()
-        setExportApi(exportApi.msg)
+        if (!exportToken) {
+          const exportToken = await auth0.getTokenSilently({
+            authorizationParams: {
+              audience: 'http://localhost:3001/api/export',
+              scope: "read:export",
+            }
+          });
+          setExportToken(exportToken)
+          const exportApiJson = await fetch('http://localhost:3001/api/export', {
+            headers: {
+              "Authorization": `Bearer ${exportToken}`
+            }
+          })
+          const exportApi = await exportApiJson.json()
+          setExportApi(exportApi.msg)
+        }
 
-        const algoliaKeysToken = await auth0.getTokenSilently({
-          authorizationParams: {
-            audience: 'http://localhost:3001/api/algolia-keys',
-            // scope: "read:keys",
-          }
-        });
-        setAlgoliaKeysToken(algoliaKeysToken)
-        // const algoliaKeysApiJson = await fetch('http://localhost:3001/api/algolia-keys', {
-        //   headers: {
-        //     "Authorization": `Bearer ${algoliaKeysToken}`
-        //   }
-        // })
-        // const algoliaKeysApi = await algoliaKeysApiJson.json()
-        // setAlgoliaKeysApi(algoliaKeysApi.msg)
+        if (!algoliaKeysToken) {
+          const algoliaKeysToken = await auth0.getTokenSilently({
+            authorizationParams: {
+              audience: 'http://localhost:3001/api/algolia-keys',
+              scope: "read:keys",
+            }
+          });
+          setAlgoliaKeysToken(algoliaKeysToken)
+          const algoliaKeysApiJson = await fetch('http://localhost:3001/api/algolia-keys', {
+            headers: {
+              "Authorization": `Bearer ${algoliaKeysToken}`
+            }
+          })
+          const algoliaKeysApi = await algoliaKeysApiJson.json()
+          setAlgoliaKeysApi(algoliaKeysApi.msg)
+        }
       } catch (error) {
         console.log('Err', error)
         if (error.error !== 'login_required') {
@@ -62,7 +66,7 @@ export default withPageAuthRequired(function SSRPage() {
 
     func()
     
-  }, [setExportToken, setAlgoliaKeysToken, exportApi, algoliaKeysApi])
+  }, [exportToken, setExportToken, algoliaKeysToken, setAlgoliaKeysToken, exportApi, setExportApi, setAlgoliaKeysApi, algoliaKeysApi])
 
 
 
