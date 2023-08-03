@@ -18,7 +18,7 @@ export default withPageAuthRequired(function SSRPage() {
         domain: 'https://dev-a5ktl21utephrnaj.us.auth0.com',
         clientId: '40KrB3szYXNSJGhaDgWM68Z734qqT6X7',
         authorizationParams: {
-          redirect_uri: 'http://localhost:3000/api/auth/callback'
+          redirect_uri: 'https://nextjs-auth0-1jwc.vercel.app/api/auth/callback'
         }
       });
 
