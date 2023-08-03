@@ -1,57 +1,19 @@
-import React, { useEffect, useState } from 'react';
-import { withPageAuthRequired } from '@auth0/nextjs-auth0';
+import React from 'react';
+import { withPageAuthRequired, getSession } from '@auth0/nextjs-auth0';
 
 import Highlight from '../components/Highlight';
 
-export default function SSRPage({ user }) {
-  const [exportToken, setExportToken] = useState('');
-  const [exportApi, setExportApi] = useState('');
-  
-  useEffect(() => {
-    const func = async () => {
-      try {
-        if (!exportToken) {
-          var optionsExport = {
-            method: 'POST',
-            url: 'https://dev-a5ktl21utephrnaj.us.auth0.com/oauth/token',
-            headers: {'content-type': 'application/x-www-form-urlencoded'},
-            data: new URLSearchParams({
-              grant_type: 'client_credentials',
-              client_id: 'eKVK9T1hMYI8PEP88bAayDJKGHDrAyrB',
-              client_secret: 'gfE8tLr_Y_F-qLlYXi5FTLgHltC05qSp0d8qpxpqyHhGp_zX0fcw6XkW8HaROy3D',
-              audience: 'http://localhost:3001/api/export'
-            })
-          };
-          
-          const exportTokenJson = await fetch(optionsExport)
-          const expToken = await exportTokenJson.json()
-          setExportToken(expToken)
-          const exportApiJson = await fetch('http://localhost:3001/api/export', {
-            headers: {
-              "Authorization": `Bearer ${expToken}`
-            }
-          })
-          const exportApi = await exportApiJson.json()
-          setExportApi(exportApi.msg)
-        }
-      } catch (e) {
-        throw e;
-      }
-    }
-
-    func()
-  }, [exportToken, setExportToken])
-  
-  
-  
+export default function SSRPage({ user, obj }) {
+  const { expToken, msg, err } = obj
   return (
     <>
       <div className="mb-5" data-testid="ssr">
         <h1 data-testid="ssr-title">Server-side Rendered Page</h1>
         <div data-testid="ssr-text">
           <p>
-            Export M2M token: {exportToken}<br />
-            Export API response: {exportApi}<br />
+            Export M2M token: {expToken}<br />
+            Export API response: {msg}<br />
+            Err: {err}<br />
             <br />
             <br />
             You can protect a server-side rendered page by wrapping the <code>getServerSideProps</code> function with{' '}
@@ -74,4 +36,40 @@ export default function SSRPage({ user }) {
   );
 }
 
-export const getServerSideProps = withPageAuthRequired();
+export const getServerSideProps = withPageAuthRequired({
+  getServerSideProps: async ({ req, res }) => {
+    const { user } = getSession(req, res)
+    let expToken
+    let msg
+    let err
+    try {
+      var optionsExport = {
+        method: 'POST',
+        headers: {'content-type': 'application/x-www-form-urlencoded'},
+        body: new URLSearchParams({
+          grant_type: 'client_credentials',
+          client_id: 'eKVK9T1hMYI8PEP88bAayDJKGHDrAyrB',
+          client_secret: 'gfE8tLr_Y_F-qLlYXi5FTLgHltC05qSp0d8qpxpqyHhGp_zX0fcw6XkW8HaROy3D',
+          audience: 'http://localhost:3001/api/export',
+        })
+      };
+      
+      const exportTokenJson = await fetch('https://dev-a5ktl21utephrnaj.us.auth0.com/oauth/token', optionsExport)
+      expToken = await exportTokenJson.json()
+      
+      const exportApiJson = await fetch('http://localhost:3001/api/export', {
+        headers: {
+          "Authorization": `Bearer ${expToken.access_token}`
+        }
+      })
+      const exportApi = await exportApiJson.json()
+      msg = exportApi.msg
+      console.log(msg)
+    } catch (e) {
+      err = e
+    }
+    // Pass data to the page via props
+    const obj = { expToken: expToken.access_token, msg, err }
+    return { props: { user, obj } }
+  }
+});
